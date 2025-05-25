@@ -1,6 +1,8 @@
 import streamlit as st
 from PIL import Image
 import random
+from AI_Generated_Image_Detector.app import predict
+
 
 # --------- Données et modèle fictif ---------
 STYLES = ["🎥 Ghibli", "💛 Simpsons", "🧙 Arcane", "🎩 JoJo", "🌀 AutreStyle"]
@@ -16,7 +18,7 @@ if "page" not in st.session_state:
 # --------- PAGE 1 : INTRO ---------
 if st.session_state.page == "intro":
     st.markdown("<h1 style='text-align: center;'>🎬 Bienvenue sur <span style='color:#FF4B4B;'>StyleVision</span> !</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Détectez automatiquement le style d’une image avec notre outil IA !</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Détectez automatiquement le style d'une image avec notre outil IA !</p>", unsafe_allow_html=True)
     st.image("https://media.giphy.com/media/QxkfTjJ84zc2c/giphy.gif", use_column_width=True)
 
     st.markdown("---")
@@ -49,7 +51,7 @@ elif st.session_state.page == "login":
 # --------- PAGE 3 : INTERFACE STYLE ---------
 elif st.session_state.page == "interface":
     
-    st.markdown("<h2 style='text-align: center;'>🎨 Détecteur de Style d’image</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>🎨 Détecteur de Style d'image</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Importez une image et découvrez son style !</p>", unsafe_allow_html=True)
     st.markdown("---")
 
@@ -58,6 +60,7 @@ elif st.session_state.page == "interface":
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         st.image(image, caption="🖼️ Image importée", use_column_width=True)
+        #gen_ai, prediction, emissions, inf_time= predict(image)  ## Il faut mettre ça après le bouton c'est pour faire l'analyse
 
         if st.button("🔍 Lancer la détection"):
             style = predict_style(image)

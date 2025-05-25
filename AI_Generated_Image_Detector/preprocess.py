@@ -4,7 +4,7 @@ import cv2
 import PIL.Image
 from scipy.interpolate import griddata
 import h5py
-from utils import azi_diff
+from .utils import azi_diff
 from tqdm import tqdm
 import os
 import random
@@ -102,39 +102,39 @@ def process_and_save_h5(file_label_pairs, patch_num, N, save_interval, joblib_ba
 
 
 
-load=False
-class1_dirs = [
-    "/home/archive/real/",
-    "/home/13k_real/",
-    "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/train/real/",
-    "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/test/real/"
-    ] #real 0
+# load=False
+# class1_dirs = [
+#     "/home/archive/real/",
+#     "/home/13k_real/",
+#     "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/train/real/",
+#     "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/test/real/"
+#     ] #real 0
 
-class2_dirs = [
-    "/home/archive/fakeV2/fake-v2/",
-    "/home/dalle3/",
-    "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/train/fake/",
-    "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/test/fake/"
-    ] #fake 1
-output_dir = "/content/drive/MyDrive/h5saves"
-file_paths_pickle_save_dir='/content/drive/MyDrive/aigc_file_paths.pkl'
-patch_num = 128
-N = 256
-save_interval = 2000
-joblib_batch_size = 400
-start_by = 0
+# class2_dirs = [
+#     "/home/archive/fakeV2/fake-v2/",
+#     "/home/dalle3/",
+#     "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/train/fake/",
+#     "/home/AI_detection_dataset/Real_AI_SD_LD_Dataset/test/fake/"
+#     ] #fake 1
+# output_dir = "h5saves"
+# file_paths_pickle_save_dir='aigc_file_paths.pkl'
+# patch_num = 128
+# N = 256
+# save_interval = 2000
+# joblib_batch_size = 400
+# start_by = 0
 
-if load==True:
-    with open(file_paths_pickle_save_dir, 'rb') as file:
-        file_label_pairs=pickle.load(file)
-    print(len(file_label_pairs))
-else:
-    class1_files, class2_files = load_image_files(class1_dirs, class2_dirs)
-    file_label_pairs = list(zip(class1_files, [0] * len(class1_files))) + list(zip(class2_files, [1] * len(class2_files)))
-    random.shuffle(file_label_pairs)
-    with open(file_paths_pickle_save_dir, 'wb') as file:
-        pickle.dump(file_label_pairs, file)
-    print(len(file_label_pairs))
+# if load==True:
+#     with open(file_paths_pickle_save_dir, 'rb') as file:
+#         file_label_pairs=pickle.load(file)
+#     print(len(file_label_pairs))
+# else:
+#     class1_files, class2_files = load_image_files(class1_dirs, class2_dirs)
+#     file_label_pairs = list(zip(class1_files, [0] * len(class1_files))) + list(zip(class2_files, [1] * len(class2_files)))
+#     random.shuffle(file_label_pairs)
+#     with open(file_paths_pickle_save_dir, 'wb') as file:
+#         pickle.dump(file_label_pairs, file)
+#     print(len(file_label_pairs))
 
-logging.basicConfig(level=logging.INFO)
-process_and_save_h5(file_label_pairs, patch_num, N, save_interval, joblib_batch_size, output_dir, start_by)
+# # logging.basicConfig(level=logging.INFO)
+# # process_and_save_h5(file_label_pairs, patch_num, N, save_interval, joblib_batch_size, output_dir, start_by)
