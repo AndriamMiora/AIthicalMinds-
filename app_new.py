@@ -1,14 +1,36 @@
 import streamlit as st
 from PIL import Image
 import random
-import base64
+from AI_Generated_Image_Detector.app import predict
+from Predict_style.predict_style import predict_image_with_onnx
 
 # --------- Démo IA ---------
 def predict_style(image):
-    return random.choice(["🎥 Ghibli", "💛 Simpsons", "🧙 Arcane", "🎩 JoJo", "🌀 AutreStyle"]), 0.92, "0.25g CO₂", "1.2s"
+    result = predict_image_with_onnx(image, onnx_model_path=MODEL)
+    #classe_predite": predicted_class,
+        # "probabilite_predite": predicted_prob,
+        # "temps_inference_s": end_inference - start_inference,
+        # "emissions_CO2_kg": emissions,
+        # "temps_total_s": end_global - start_global,
+        # "probabilites_par_classe": dict(zip(class_names, probabilities))
+    # Valeurs fixes pour la démo
+    style = result["classe_predite"]  # Style fixe pour la démo
+    proba_style = result["probabilite_predite"] # 92% de certitude
+    carbone_style =result["emissions_CO2_kg"] # "0.25g CO₂"
+    temps_style = result["temps_total_s"] #"1.2s"
+    prob_par_class = result["probabilites_par_classe"] 
+    return style, proba_style, carbone_style, temps_style, prob_par_class
 
 def predict_AI(image):
-    return False, 0.95, "0.18g CO₂", "0.8s"
+    return predict(image)
+
+
+#SI PB AVEC predict_AI faire : 
+
+#def predict_AI(image):
+#    result = predict(image)
+#    return result["est_IA"], result["probabilite"], result["emissions_CO2_kg"], result["temps_inference_s"]
+
 
 # --------- CSS global (à mettre en haut) ---------
 st.markdown("""
@@ -279,7 +301,7 @@ elif st.session_state.page == "resultat":
             st.warning("L'image n'a pas été générée par une IA.")
         else:
             st.success("L'image a été générée par une IA.")
-            style, proba_style, carbone_style, temps_style = predict_style(image)
+            style, proba_style, carbone_style, temps_style ,prob_par_class = predict_style(image)
             if style == "🌀 AutreStyle":
                 st.info("Aucun style détecté.")
             else:
@@ -291,6 +313,12 @@ elif st.session_state.page == "resultat":
         st.markdown(f"**Certitude IA** : {proba*100:.2f}%")
         st.markdown(f"**Carbone IA** : {carbon}")
         st.markdown(f" **Temps IA** : {inference_time}")
+        
+        if image and is_ai:
+            st.markdown("### Probabilités par style détecté :")
+            for classe, prob in prob_par_class.items():
+                st.markdown(f"- **{classe}** : {prob*100:.2f}%")
+
 
     if st.button(" Retour"):
         st.session_state.page = "interface"
@@ -338,3 +366,4 @@ elif st.session_state.page == "team":
         """, unsafe_allow_html=True)
 
         st.image("photo_equipe.jpg", width=250)
+
