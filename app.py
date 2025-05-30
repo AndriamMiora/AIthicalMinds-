@@ -1,7 +1,7 @@
-<<<<<<< HEAD
 import streamlit as st
 from PIL import Image
 import random
+from AI_Generated_Image_Detector.app import predict
 
 # --------- Données et modèle fictif ---------
 STYLES = ["🎥 Ghibli", "💛 Simpsons", "🧙 Arcane", "🎩 JoJo", "🌀 AutreStyle"]
@@ -24,12 +24,13 @@ def predict_style(image):
     return style, proba_style, carbone_style, temps_style
 
 def predict_AI(image):
+    return predict(image)
     # Valeurs fixes pour la démo
-    is_ai = False         # Toujours détecter comme IA pour cet exemple
-    proba = 0.95         # 95% de certitude
-    carbon = "0.18g CO₂" # Émission carbone fixe
-    inference_time = "0.8s" # Temps d'inférence fixe
-    return is_ai, proba, carbon, inference_time
+    # is_ai = False         # Toujours détecter comme IA pour cet exemple
+    # proba = 0.95         # 95% de certitude
+    # carbon = "0.18g CO₂" # Émission carbone fixe
+    # inference_time = "0.8s" # Temps d'inférence fixe
+    # return is_ai, proba, carbon, inference_time
 
 st.markdown("""
     <style>
