@@ -2,12 +2,13 @@ import streamlit as st
 from PIL import Image
 import random
 from AI_Generated_Image_Detector.app import predict
+from Predict_style.predict_style import predict_image_with_onnx
+import base64
 
+
+MODEL = "Predict_style/best_model_vrai.onnx"
 # --------- Données et modèle fictif ---------
 STYLES = ["🎥 Ghibli", "💛 Simpsons", "🧙 Arcane", "🎩 JoJo", "🌀 AutreStyle"]
-
-
-import base64
 
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
@@ -16,12 +17,20 @@ def get_base64_of_bin_file(bin_file):
 
 
 def predict_style(image):
+    result = predict_image_with_onnx(image, onnx_model_path=MODEL)
+    #classe_predite": predicted_class,
+        # "probabilite_predite": predicted_prob,
+        # "temps_inference_s": end_inference - start_inference,
+        # "emissions_CO2_kg": emissions,
+        # "temps_total_s": end_global - start_global,
+        # "probabilites_par_classe": dict(zip(class_names, probabilities))
     # Valeurs fixes pour la démo
-    style = "🌀 AutreStyle"  # Style fixe pour la démo
-    proba_style = 0.92   # 92% de certitude
-    carbone_style = "0.25g CO₂"
-    temps_style = "1.2s"
-    return style, proba_style, carbone_style, temps_style
+    style = result["classe_predite"]  # Style fixe pour la démo
+    proba_style = result["probabilite_predite"] # 92% de certitude
+    carbone_style =result["emissions_CO2_kg"] # "0.25g CO₂"
+    temps_style = result["temps_total_s"] #"1.2s"
+    prob_par_class = result["probabilites_par_classe"] 
+    return style, proba_style, carbone_style, temps_style, prob_par_class
 
 def predict_AI(image):
     return predict(image)
@@ -32,190 +41,203 @@ def predict_AI(image):
     # inference_time = "0.8s" # Temps d'inférence fixe
     # return is_ai, proba, carbon, inference_time
 
+
+#SI PB AVEC predict_AI faire : 
+
+#def predict_AI(image):
+#    result = predict(image)
+#    return result["est_IA"], result["probabilite"], result["emissions_CO2_kg"], result["temps_inference_s"]
+
+
+# --------- CSS global (à mettre en haut) ---------
 st.markdown("""
-    <style>
-    /* Met tout le fond principal en blanc */
-    .stApp {
-        background-color: white !important;
-        color: black !important;
-    }
-
-    /* Conteneur principal */
-    .block-container {
-        background-color: white !important;
-        color: black !important;
-    }
-
-    /* Titres et paragraphes */
-    h1, h2, p, label {
-        color: black !important;
-        text-align: center;
-    }
-
-    /* Boutons Streamlit */
-    .stButton > button {
-        background: linear-gradient(to right, #74ebd5, #acb6e5);
-        color: black !important;
-        font-weight: bold;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 12px;
-    }
-
-    .stButton > button:hover {
-        background: linear-gradient(to right, #acb6e5, #74ebd5);
-        color: black !important;
-    }
-
-    /* Uploader */
-    .uploadedFile {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: black !important;
-    }
-
-    /* Alertes (success, error, info...) */
-    .stAlert {
-        background-color: rgba(0, 0, 0, 0.05) !important;
-        border-left: 4px solid #FF4B4B;
-    }
-    
-    /* Ajoute le logo en haut à gauche */
-.logo-container {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 999;
+<style>
+.stApp {
+    background: linear-gradient(to right, #d9f3ff, #0072ff);
+    font-family: 'Segoe UI', sans-serif;
 }
-
-.logo-container img {
-    max-height: 100px;  /* Ajuste ici selon ta préférence */
-    height: auto;
-    width: auto;
+.block-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem;
 }
-
-    /* Fond blanc et texte noir */
-    .stApp, .block-container {
-        background-color: white !important;
-        color: black !important;
-    }
-
-    h1, h2, p, label {
-        color: black !important;
-        text-align: center;
-    }
-
-    .stButton > button {
-        background: linear-gradient(to right, #74ebd5, #acb6e5);
-        color: black !important;
-        font-weight: bold;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 12px;
-    }
-
-    .stButton > button:hover {
-        background: linear-gradient(to right, #acb6e5, #74ebd5);
-        color: black !important;
-    }
-
-    .uploadedFile {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: black !important;
-    }
-
-    .stAlert {
-        background-color: rgba(0, 0, 0, 0.05) !important;
-        border-left: 4px solid #FF4B4B;
-    }
-    
-        .stApp {
-        background-image: url("background.png");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-    }
-
-    .block-container {
-        background-color: rgba(255, 255, 255, 0.8); /* Optionnel : fond blanc semi-transparent pour les blocs */
-        padding: 2rem;
-        border-radius: 15px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-bg_img = get_base64_of_bin_file("LOGO.png")
-
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{bg_img}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-    }}
-
-    .block-container {{
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 2rem;
-        border-radius: 15px;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown("""
-<div class="logo-container">
-    <img src="LOGO.png" style="height: auto; max-height: 100px; width: auto;">
-</div>
-
+h1, h2, h3 {
+    font-weight: 800;
+    color: black;
+    text-align: center;
+}
+p, label, span {
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+}
+.stButton > button {
+    background: linear-gradient(to right, #12c2e9, #0072ff);
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 20px;
+}
+.stButton > button:hover {
+    background: linear-gradient(to right, #0072ff, #12c2e9);
+    color: white;
+}
+input[type="text"], input[type="password"] {
+    background-color: #111;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+.css-1xarl3l {
+    background-color: #f5f5f5;
+    border: 2px dashed #0072ff;
+    border-radius: 10px;
+    padding: 1em;
+}
+.stAlert {
+    border-left: 5px solid #FF4B4B;
+    background-color: #fff5f5;
+}
+</style>
 """, unsafe_allow_html=True)
 
+# bouton JS simulé à la place de onclick (sinon ne fonctionne pas en Streamlit)
+if st.session_state.get("page_trigger") == "team":
+    st.session_state.page = "team"
+    st.session_state.page_trigger = None
+    st.rerun()
+elif st.session_state.get("page_trigger") == "login":
+    st.session_state.page = "login"
+    st.session_state.page_trigger = None
+    st.rerun()
 
-# --------- Données et modèle fictif ---------
-STYLES = ["🎥 Ghibli", "💛 Simpsons", "🧙 Arcane", "🎩 JoJo", "🌀 AutreStyle"]
-def predict_style(image):
-    return random.choice(STYLES)
-
-# --------- Gestion de session ---------
-
+# --------- Navigation ---------
+if "connected" not in st.session_state:
+    st.session_state.connected = False
 
 if "page" not in st.session_state:
     st.session_state.page = "intro"
 
-# --------- PAGE 1 : INTRO ---------
+# --------- PAGE 1 : Accueil (intro) ---------
 if st.session_state.page == "intro":
-    st.markdown("<h1 style='text-align: center;'> Bienvenue sur <span style='color:#FF4B4B;'>StyleVision</span> !</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Détectez automatiquement le style d’une image avec notre outil IA !</p>", unsafe_allow_html=True)
+    # NAVIGATION (visible sur toutes les pages)
+    col1, col2, col3, col4 = st.columns([1, 2, 1, 1])
+    with col1:
+        st.image("LOGO.png", width=80)
+    with col2:
+        st.markdown("### Home")
+    with col3:
+        if st.button("About Us"):
+            st.session_state.page = "team"
+            st.rerun()
+    with col4:
+        if st.session_state.get("connected"):
+            if st.button("Sign Out"):
+                st.session_state.connected = False
+                st.success("Déconnexion réussie.")
+                st.session_state.page = "intro"
+                st.rerun()
+
+
+    # STYLE DE FOND GRADIENT BLANC ➜ BLEU
+    st.markdown("""
+    <style>
+    .main-container {
+        display: flex;
+        background: linear-gradient(to right, white 50%, #00c6ff, #0072ff);
+        border-radius: 10px;
+        padding: 30px;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 450px;
+    }
+    .left-content {
+        width: 45%;
+        padding-left: 30px;
+    }
+    .left-content h1 {
+        font-size: 40px;
+        font-weight: 900;
+        color: black;
+    }
+    .left-content p {
+        font-size: 16px;
+        color: black;
+        margin-bottom: 20px;
+    }
+    .right-content {
+        width: 50%;
+        text-align: center;
+    }
+    .right-content img {
+        width: 80%;
+        max-height: 300px;
+    }
+    .brand-title {
+        font-size: 30px;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # CONTENU PRINCIPAL
+    # CONTENU PRINCIPAL AVEC IMAGE STREAMLIT (centrée dans la section droite)
+
+    st.markdown("""
+    <div class="main-container">
+        <div class="left-content">
+            <h1>Welcome to<br>StyleVision!</h1>
+            <p>Automatically detect the style of an image with our AI tool!</p>
+        </div>
+        <div class="right-content">
+            <div class="brand-title">StyleVision</div>
+    """, unsafe_allow_html=True)
+
+    # ⚠️ L’image doit être en dehors du HTML
     st.image("GIF_ACCUEIL.gif", use_container_width=True)
 
-    
-    
-    st.markdown("---")
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col3:
-        if st.button("Continuer vers la connexion ⮕"):
-            st.session_state.page = "login"
-            st.rerun()
-            
+    # 🔚 On ferme le HTML après l’image
     st.markdown("""
-<hr style="margin-top: 50px; margin-bottom: 30px;">
-
-<p style='text-align: center; font-size: 16px; color: gray;'>
-Nous sommes <strong>Ashley</strong>, <strong>Miora</strong>, <strong>Cloé</strong> et <strong>Linda</strong>, étudiantes 5ème année <strong>Polytech Sorbonne</strong>, et nous participons au hackathon organisé par BEINK .<br><br>
-Notre produit, <em>StyleVision</em>, permet d'analyser automatiquement le style visuel d'une image grâce à une IA conviviale et intuitive.<br><br>
-Nous vous remercions chaleureusement pour votre attention, et nous vous souhaitons une excellente session d’imagerie !
-</p>
-""", unsafe_allow_html=True)
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
+    # BOUTON CONNECT EN BAS (visible aussi en mobile)
+    col1, col2, col3 = st.columns([1.5, 1, 1.5])
+    with col2:
+        if not st.session_state.connected:
+            if st.button("Connect"):
+                st.session_state.page = "login"
+                st.rerun()
+        else:
+            if st.button("Modèle"):
+                st.session_state.page = "interface"
+                st.rerun()
 
 
-# --------- PAGE 2 : CONNEXION ---------
+# --------- PAGE 2 : Login ---------
 elif st.session_state.page == "login":
-    st.markdown("<h2 style='text-align: center;'>Espace utilisateur</h2>", unsafe_allow_html=True)
+    # NAVIGATION (visible sur toutes les pages)
+    col1, col2, col3, col4 = st.columns([1, 2, 1, 1])
+    with col1:
+        st.image("LOGO.png", width=80)
+    with col2:
+        st.markdown("### Home")
+    with col3:
+        if st.button("About Us"):
+            st.session_state.page = "team"
+            st.rerun()
+    with col4:
+        if st.button("Home"):
+            st.session_state.page = "intro"
+            st.rerun()
+    st.markdown("<h2 style='text-align: center; color: black; font-size: 32px;'>Espace utilisateur</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Veuillez saisir vos identifiants :</p>", unsafe_allow_html=True)
 
     username = st.text_input("Username")
@@ -225,59 +247,140 @@ elif st.session_state.page == "login":
     with col2:
         if st.button("Se connecter"):
             if username == "admin" and password == "admin":
+                st.session_state.connected = True
                 st.success("Connexion réussie !")
                 st.session_state.page = "interface"
                 st.rerun()
+
             else:
                 st.error("Identifiants incorrects, veuillez vérifier vos identifiants")
+
+# --------- PAGE 3 : Interface (upload) ---------
+
+elif st.session_state.page == "interface":
+        # NAVIGATION (visible sur toutes les pages)
+    col1, col2, col3, col4 = st.columns([1, 2, 1, 1])
     with col1:
-        if st.button("⬅ Retour à l'accueil"):
+        st.image("LOGO.png", width=80)
+    with col2:
+        st.markdown("### Home")
+    with col3:
+        if st.button("About Us"):
+            st.session_state.page = "team"
+            st.rerun()
+    with col4:
+        if st.button("Home"):
             st.session_state.page = "intro"
             st.rerun()
+    if not st.session_state.connected:
+        st.warning("Vous devez être connecté pour accéder à cette page.")
+        st.session_state.page = "login"
+        st.rerun()
 
-# --------- PAGE 3 : INTERFACE STYLE ---------
-elif st.session_state.page == "interface":
-    st.markdown("<h2 style='text-align: center;'>🎨 Détecteur de Style d'image</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Importez une image et découvrez son style !</p>", unsafe_allow_html=True)
-    st.markdown("---")
-
-    uploaded_file = st.file_uploader("📤 Importer une image (jpg, png, jpeg)", type=["jpg", "jpeg", "png"])
+    st.markdown("<h1 style='color: black; text-align: center;'>Détecteur de Style d'image</h1>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Importer une image", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        st.image(image, caption="🖼️ Image importée", use_container_width=True)
-
+        st.image(image, caption="Image importée succesfully", use_container_width=True)
         if st.button("🔍 Lancer la détection"):
-            # D'abord vérifier si c'est une IA
-            is_ai, proba, carbon, inference_time = predict_AI(image)
-
-            if not is_ai:
-                st.warning("L'image n'a pas été générée par une IA. Fin du traitement")
-                st.write(f"🔎 Certitude (Accuracy) : {proba*100:.2f}%")
-                st.write(f"🌱 Code carbone estimé : {carbon}")
-                st.write(f"⏱️ Temps d'inférence : {inference_time}")
-            else:
-                st.success("L'image a été générée par une IA.")
-                st.write(f"🔎 Certitude (Accuracy) : {proba*100:.2f}%")
-                st.write(f"🌱 Code carbone estimé : {carbon}")
-                st.write(f"⏱️ Temps d'inférence : {inference_time}")
-
-                # Si c'est une IA, détecter le style
-                style, proba_style, carbone_style, temps_style = predict_style(image)
-
-                if style == "🌀 AutreStyle":
-                    st.info("Aucun style détecté dans notre base de données.")
-                else:
-                    st.success(f"✅ Style détecté : **{style}**")
-                    st.write(f"🔎 Certitude (Accuracy) : {proba_style*100:.2f} %")
-                    st.write(f"🌱 Code carbone estimé : {carbone_style}")
-                    st.write(f"⏱️ Temps d'inférence : {temps_style}")
+            st.session_state.image = image
+            st.session_state.page = "resultat"
+            st.rerun()
     else:
-        st.info("🕹️ Veuillez déposer une image pour commencer.")
+        st.info("Veuillez déposer une image pour commencer.")
 
-    st.markdown("---")
-    col1, col2, col3 = st.columns([2, 1, 1])
+
+# --------- PAGE 4 : Résultat ---------
+elif st.session_state.page == "resultat":
+            # NAVIGATION (visible sur toutes les pages)
+    col1, col2, col3, col4 = st.columns([1, 2, 1, 1])
+    with col1:
+        st.image("LOGO.png", width=80)
+    with col2:
+        st.markdown("### Home")
     with col3:
-        if st.button("🔒 Se déconnecter"):
+        if st.button("About Us"):
+            st.session_state.page = "team"
+            st.rerun()
+    with col4:
+        if st.button("Home"):
             st.session_state.page = "intro"
             st.rerun()
+    st.markdown("<h1 style='color: black; text-align: center;'>Résultats de l’analyse</h1>", unsafe_allow_html=True)
+
+    image = st.session_state.get("image", None)
+
+    if image:
+
+        st.image(image, caption="🖼️ Image importée", use_container_width=True)
+        is_ai, proba, carbon, inference_time = predict_AI(image)
+        if not is_ai:
+            st.warning("L'image n'a pas été générée par une IA. Fin du traitement")
+            st.write(f"🔎 Certitude (Accuracy) : { (1-proba)*100:.2f}%")
+            st.write(f"🌱 Code carbone estimé : {carbon} kg")
+            st.write(f"⏱️ Temps d'inférence : {inference_time} s")
+        else:
+            st.success("L'image a été générée par une IA.")
+            st.write(f"🔎 Certitude (Accuracy) : {proba*100:.2f}%")
+            st.write(f"🌱 Code carbone estimé : {carbon} kg ")
+            st.write(f"⏱️ Temps d'inférence : {inference_time} s ")
+
+            # Si c'est une IA, détecter le style
+            style, proba_style, carbone_style, temps_style, _= predict_style(image)
+
+            if style == "🌀 AutreStyle":
+                st.info("Aucun style détecté dans notre base de données.")
+            else:
+                st.success(f"✅ Style détecté : **{style}**")
+                st.write(f"🔎 Certitude (Accuracy) : {proba_style} %")
+                st.write(f"🌱 Code carbone estimé : {carbone_style} kg")
+                st.write(f"⏱️ Temps d'inférence : {temps_style} s")
+
+
+    if st.button(" Retour"):
+        st.session_state.page = "interface"
+        st.rerun()
+
+# --------- PAGE 5 : Équipe ---------
+elif st.session_state.page == "team":
+    # --- Barre de navigation ---
+    col1, col2, col3, col4 = st.columns([1, 2, 1, 1])
+    with col1:
+        st.image("LOGO.png", width=80)
+    with col2:
+        st.markdown("### About Us")
+    with col3:
+        if st.button("Home"):
+            st.session_state.page = "intro"
+            st.rerun()
+    with col4:
+        if st.button("StyleVision"):
+            st.session_state.page = "interface"
+            st.rerun()
+    # Colonnes : Texte + Image + Titre bleu
+    left, right = st.columns([1.5, 1])
+
+    with left:
+        st.markdown("""
+        <div style='padding: 2rem; font-size: 16px; text-align: justify;'>
+        <p>Nous sommes Ashley, Miora, Cloé et Linda, étudiantes 5ème année Polytech Sorbonne en Mathematiques Appliquées et Informatique, et nous participons au hackathon organisé par BEINK.</p>
+        <p>Notre produit, <strong>StyleVision</strong>, permet d'analyser automatiquement le style visuel d'une image grâce à une IA conviviale et intuitive.</p>
+        <p>Nous vous remercions chaleureusement pour votre attention, et nous vous souhaitons une excellente session d’imagerie !</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with right:
+        st.markdown("""
+        <div style='
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            border-radius: 15px;
+            padding: 10px 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        '>
+        <p style='color: white; font-size: 20px; font-weight: bold; margin: 5px;'>StyleVision</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.image("photo_equipe.jpg", width=250)
