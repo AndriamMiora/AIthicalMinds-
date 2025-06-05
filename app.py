@@ -1,3 +1,4 @@
+
 import streamlit as st
 from PIL import Image
 import random
@@ -191,11 +192,12 @@ if st.session_state.page == "intro":
     st.markdown("""
     <div class="main-container">
         <div class="left-content">
-            <h1>Welcome to<br>StyleVision!</h1>
-            <p>Automatically detect the style of an image with our AI tool!</p>
+            <h1>Bienvenue sur <br>StyleVision!</h1>
+            <p>Détectez automatiquement le style d'une image grâce à notre outil d'IA !</p>
         </div>
         <div class="right-content">
             <div class="brand-title">StyleVision</div>
+            <div class="brand-title">Votre image sous un nouveau regard</div>
     """, unsafe_allow_html=True)
 
     # ⚠️ L’image doit être en dehors du HTML
@@ -333,6 +335,7 @@ elif st.session_state.page == "resultat":
                 st.info("Aucun style détecté dans notre base de données.")
             else:
                 st.success(f"✅ Style détecté : **{style}**")
+                st.write(f"⚠️ Attention, votre image utilise un style protégé par des droits d'auteur.")
                 st.write(f"🔎 Certitude (Accuracy) : {proba_style} %")
                 st.write(f"🌱 Code carbone estimé : {carbone_style} kg")
                 st.write(f"⏱️ Temps d'inférence : {temps_style} s")
